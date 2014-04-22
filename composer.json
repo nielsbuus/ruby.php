@@ -1,0 +1,8 @@
+{
+  "name": "nielsbuus/ruby.php",
+  "description": "A PHP port of the standard Ruby library ",
+  "version": "0.0.1",
+  "autoload": {
+    "classmap": ["lib/"]
+  }
+}
