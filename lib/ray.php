@@ -31,7 +31,7 @@ class Ray implements arrayaccess {
   }
 
   public function filter($handler) {
-    return new Ray(array_filter($this->internal_array, $handler));
+    return new Ray(array_values(array_filter($this->internal_array, $handler)));
   }
 
   public function select($handler) {
