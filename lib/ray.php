@@ -27,7 +27,7 @@ class Ray implements arrayaccess {
 
   public function unshift($element) {
     array_unshift($this->internal_array, $element);
-    return $element;
+    return $this;
   }
 
   public function filter($handler) {
