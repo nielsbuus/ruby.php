@@ -1,6 +1,6 @@
 <?php
 
-class Ray {
+class Ray implements arrayaccess {
 
   public function __construct($array = []) {
     $this->internal_array = $array;
@@ -114,4 +114,22 @@ class Ray {
     return $subject;
   }
 
+  public function offsetExists($offset)
+  {
+    return array_key_exists($offset, $this->internal_array);
+  }
+
+  public function offsetGet($offset)
+  {
+    return $this->internal_array[$offset];
+  }
+  public function offsetSet($offset, $value)
+  {
+    $this->internal_array[$offset] = $value;
+  }
+
+  public function offsetUnset($offset)
+  {
+    unset($this->internal_array[$offset]);
+  }
 }
