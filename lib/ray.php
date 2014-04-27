@@ -88,11 +88,11 @@ class Ray implements arrayaccess {
     return $this->count() == 0;
   }
 
-  public function any($handler) {
+  public function any_match($handler) {
     return $this->filter($handler)->count() > 0;
   }
 
-  public function all($handler) {
+  public function all_match($handler) {
     return $this->filter($handler)->count() == $this->count();
   }
 
