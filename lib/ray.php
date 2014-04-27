@@ -104,7 +104,7 @@ class Ray implements arrayaccess {
 
   public function shuffle_self() {
     shuffle($this->internal_array);
-    return this;
+    return $this;
   }
 
   private function extract_raw_array($subject) {
