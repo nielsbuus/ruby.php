@@ -2,7 +2,7 @@
 
 class Ray implements arrayaccess {
 
-  public function __construct($array = []) {
+  public function __construct($array) {
     $this->internal_array = $array;
   }
 
