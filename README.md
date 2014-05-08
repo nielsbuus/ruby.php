@@ -116,7 +116,7 @@ Check the code and the unit tests for more information on how to use Rash.
 
 ### Specs
 
-Currently there are no specs to verify ruby.php's behavior - this is on the todo list.
+The library is richly spec'ed using PHPUnit. See the `/tests` folder.
 
 ### Performance
 
