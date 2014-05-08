@@ -1,11 +1,19 @@
 <?php
 
-class Rash implements arrayaccess {
+class Rash {
 
   private $internal_array;
 
   public function __construct($dictionary) {
-    $this->internal_array = $dictionary;
+    $this->internal_array = [];
+    $this->merge_self($dictionary);
+  }
+
+  public function merge_self($rash) {
+    $assoc_array = $this->extract_raw_assoc_array($rash);
+    foreach($assoc_array as $key => $value) {
+      $this->set($key, $value);
+    }
   }
 
   public function clear() {
@@ -14,8 +22,9 @@ class Rash implements arrayaccess {
   }
 
   public function delete($key) {
-    $val = $this->internal_array[$key];
-    unset($this->internal_array[$key]);
+    $typed_key = $this->generate_typed_key($key);
+    $val = $this->internal_array[$typed_key];
+    unset($this->internal_array[$typed_key]);
     return $val;
   }
 
@@ -37,8 +46,17 @@ class Rash implements arrayaccess {
     }
   }
 
-  public function fetch($key, $default) {
-    # coming
+  public function fetch($key, $default = null) {
+    $return_value = $this->get($key);
+    if(!is_null($return_value)) {
+      return $return_value;
+    } else {
+      if(is_null($default)) {
+        throw new KeyError();
+      } else {
+        return $default;
+      }
+    }
   }
 
   public function flatten() {
@@ -46,59 +64,82 @@ class Rash implements arrayaccess {
   }
 
   public function has_key($key) {
-    return $this->offsetExists($key);
+    $typed_key = $this->generate_typed_key($key);
+    return array_key_exists($typed_key, $this->internal_array);
   }
 
   public function has_value($value) {
-    # coming
+    return in_array($value, $this->internal_array, true);
   }
 
   public function invert() {
-    # coming
+    $new_rash = new Rash([]);
+    foreach($this->internal_array as $key => $value) {
+      $restored_key = $this->restore_typed_key($key);
+      $new_rash->set($value, $restored_key);
+    }
+    return $new_rash;
   }
 
-  public function keep_if() {
-    # coming
+  public function keep_if($handler) {
+    foreach($this->internal_array as $key => $value) {
+      $restored_key = $this->restore_typed_key($key);
+      if($handler($restored_key, $value)) {
+        # Fine
+      } else {
+        $this->delete($restored_key);
+      }
+    }
   }
 
-  public function key($value) {
-    # coming
+  public function key($needle) {
+    foreach($this->internal_array as $key => $value) {
+      if($value === $needle) { return $this->restore_typed_key($key); }
+    }
+    return null;
   }
 
   public function keys() {
     $typed_keys = ray(array_keys($this->internal_array));
-    $typed_keys->map(function($typed_key) {
-      $type = explode("_", $typed_key)[0];
-      settype($typed_key, $type);
-      return $typed_key;
+    return $typed_keys->map(function($typed_key) {
+      return $this->restore_typed_key($typed_key);
     });
   }
 
-  public function offsetExists($offset)
+  public function get($key)
   {
-    return array_key_exists($this->resolve_typed_key($offset), $this->internal_array);
+    $typed_key = $this->generate_typed_key($key);
+    if(isset($this->internal_array[$typed_key])) {
+      return $this->internal_array[$typed_key];
+    } else {
+      return null;
+    }
   }
 
-  public function offsetGet($offset)
+  public function set($key, $value)
   {
-    return $this->internal_array[$this->resolve_typed_key($offset)];
+    $typed_key = $this->generate_typed_key($key);
+    $this->internal_array[$typed_key] = $value;
   }
 
-  public function offsetSet($offset, $value)
-  {
-    var_dump($offset);
-    $typed_key = $this->resolve_typed_key($offset);
-    echo "Now setting " . $typed_key;
-    $this->internal_array[$this->resolve_typed_key($offset)] = $value;
-  }
-
-  public function offsetUnset($offset)
-  {
-    unset($this->internal_array[$this->resolve_typed_key($offset)]);
-  }
-
-  private function resolve_typed_key($key) {
+  private function generate_typed_key($key) {
     $type = gettype($key);
     return $type . '_' . $key;
   }
+
+  private function restore_typed_key($typed_key) {
+    $split_typed_key = explode("_", $typed_key);
+    $type = array_shift($split_typed_key);
+    $key = join('_', $split_typed_key);
+    settype($key, $type);
+    return $key;
+  }
+
+  private function extract_raw_assoc_array($subject) {
+    if(is_object($subject) && get_class($subject) == 'Rash') {
+      $subject = $subject->to_a();
+    }
+    return $subject;
+  }
+
 }
