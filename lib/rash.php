@@ -66,26 +66,39 @@ class Rash implements arrayaccess {
   }
 
   public function keys() {
-    return array_keys($this->internal_array);
+    $typed_keys = ray(array_keys($this->internal_array));
+    $typed_keys->map(function($typed_key) {
+      $type = explode("_", $typed_key)[0];
+      settype($typed_key, $type);
+      return $typed_key;
+    });
   }
 
   public function offsetExists($offset)
   {
-    return array_key_exists($offset, $this->internal_array);
+    return array_key_exists($this->resolve_typed_key($offset), $this->internal_array);
   }
 
   public function offsetGet($offset)
   {
-    return $this->internal_array[$offset];
+    return $this->internal_array[$this->resolve_typed_key($offset)];
   }
 
   public function offsetSet($offset, $value)
   {
-    $this->internal_array[$offset] = $value;
+    var_dump($offset);
+    $typed_key = $this->resolve_typed_key($offset);
+    echo "Now setting " . $typed_key;
+    $this->internal_array[$this->resolve_typed_key($offset)] = $value;
   }
 
   public function offsetUnset($offset)
   {
-    unset($this->internal_array[$offset]);
+    unset($this->internal_array[$this->resolve_typed_key($offset)]);
+  }
+
+  private function resolve_typed_key($key) {
+    $type = gettype($key);
+    return $type . '_' . $key;
   }
 }
